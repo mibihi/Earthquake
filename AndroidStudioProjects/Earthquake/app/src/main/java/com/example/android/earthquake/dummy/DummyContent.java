@@ -17,7 +17,7 @@ public class DummyContent {
      * An array of sample (dummy) items.
      */
     public static final List<DummyItem> ITEMS = new ArrayList<DummyItem>();
-
+    public String LOG_TAG = DummyContent.class.getName();
     /**
      * A map of sample (dummy) items, by ID.
      */
@@ -44,9 +44,7 @@ public class DummyContent {
     private static String makeDetails(int position) {
         StringBuilder builder = new StringBuilder();
         builder.append("Details about Item: ").append(position);
-        for (int i = 0; i < position; i++) {
-            builder.append("\nMore details information here.");
-        }
+        builder.append("\nMore details information here.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         return builder.toString();
     }
 
