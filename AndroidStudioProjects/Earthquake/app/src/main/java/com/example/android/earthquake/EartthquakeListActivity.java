@@ -88,19 +88,16 @@ public class EartthquakeListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            final DummyContent.DummyItem dummyItem = mValues.get(position);
-
-            holder.mMagnitude.setText(dummyItem.getmMagnitude()+"");
-            holder.mLocation.setText(dummyItem.getmLocation());
-            holder.mTimeinMilliseconds.setText(dummyItem.getmTimeinMilliseconds()+"");
-
+            holder.mItem = mValues.get(position);
+            holder.mIdView.setText(mValues.get(position).id);
+            holder.mContentView.setText(mValues.get(position).content);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(EartthquakeDetailFragment.ARG_ITEM_ID, dummyItem.getId());
+                        arguments.putString(EartthquakeDetailFragment.ARG_ITEM_ID, holder.mItem.id);
                         EartthquakeDetailFragment fragment = new EartthquakeDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -109,7 +106,7 @@ public class EartthquakeListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, EartthquakeDetailActivity.class);
-                        intent.putExtra(EartthquakeDetailFragment.ARG_ITEM_ID, dummyItem.getId());
+                        intent.putExtra(EartthquakeDetailFragment.ARG_ITEM_ID, holder.mItem.id);
 
                         context.startActivity(intent);
                     }
@@ -124,29 +121,20 @@ public class EartthquakeListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mMagnitude;
-            public final TextView mLocation;
-            public final TextView mLocationoffset;
-            public final TextView mTimeinMilliseconds;
-            public final TextView mDate;
-
-
+            public final TextView mIdView;
+            public final TextView mContentView;
             public DummyContent.DummyItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
-               mView = view;
-                mMagnitude = (TextView) view.findViewById(R.id.magnitude);
-                mLocation = (TextView) view.findViewById(R.id.primary_location);
-                mLocationoffset =(TextView) view.findViewById(R.id.location_offset) ;
-                mTimeinMilliseconds = (TextView) view.findViewById(R.id.date);
-                mDate = (TextView) view.findViewById(R.id.date);
-
+                mView = view;
+                mIdView = (TextView) view.findViewById(R.id.id);
+                mContentView = (TextView) view.findViewById(R.id.content);
             }
 
             @Override
             public String toString() {
-                return super.toString() + " '" + mItem.toString()+ "'";
+                return super.toString() + " '" + mContentView.getText() + "'";
             }
         }
     }
