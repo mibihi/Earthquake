@@ -11,6 +11,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
+import com.example.android.earthquake.dummy.DummyContent;
+
 /**
  * An activity representing a single Eartthquake detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,
@@ -18,7 +20,7 @@ import android.view.MenuItem;
  * in a {@link EartthquakeListActivity}.
  */
 public class EartthquakeDetailActivity extends AppCompatActivity {
-
+    public String LOG_TAG = EartthquakeDetailActivity.class.getName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

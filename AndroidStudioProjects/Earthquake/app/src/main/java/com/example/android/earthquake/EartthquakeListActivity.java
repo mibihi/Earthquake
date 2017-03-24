@@ -29,6 +29,7 @@ import java.util.List;
  */
 public class EartthquakeListActivity extends AppCompatActivity {
 
+    public String LOG_TAG = EartthquakeListActivity.class.getName();
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -90,7 +91,7 @@ public class EartthquakeListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mContentView.setText(mValues.get(position).website_name);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
