@@ -1,13 +1,15 @@
 package com.example.android.earthquake;
 
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -21,11 +23,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
-import com.example.android.earthquake.dummy.DummyContent;
+
 import com.example.android.earthquake.dummy.Earthquake;
 import com.example.android.earthquake.dummy.EarthquakeLoader;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+
+
 
 /**
  * An activity representing a list of Earthquakes. This activity
@@ -38,9 +45,10 @@ import java.util.List;
 public class EartthquakeListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
     public String LOG_TAG = EartthquakeListActivity.class.getName();
+    private static final String LOCATION_SEPARATOR = " of ";
     /** URL for earthquake data from the USGS dataset */
     private static final String USGS_REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02&limit=5";
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02&limit=15";
     /**
      * Constant value for the earthquake loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
@@ -48,6 +56,9 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
     private static final int EARTHQUAKE_LOADER_ID = 1;
     /** TextView that is displayed when the list is empty */
     private TextView mEmptyStateTextView;
+    private List<Earthquake> mEarthquake;
+    View recyclerView;
+    private String primaryloc,offsetloc;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -75,9 +86,9 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
         LoaderManager loaderManager = getSupportLoaderManager();
         loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
-        View recyclerView = findViewById(R.id.eartthquake_list);
+         recyclerView = findViewById(R.id.eartthquake_list);
         assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+       // setupRecyclerView((RecyclerView) recyclerView,mEarthquake  );
 
         if (findViewById(R.id.eartthquake_detail_container) != null) {
             // The detail container view will be present only in the
@@ -88,8 +99,9 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
         }
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+    private void setupRecyclerView( RecyclerView recyclerView, List<Earthquake> eq) {
+
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(eq));
     }
 
     @Override
@@ -99,7 +111,13 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
 
     @Override
     public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> data) {
-        Log.e(LOG_TAG,data.toString());
+        ProgressDialog progress = new ProgressDialog(this);
+        progress.setMessage("Downloading Music :) ");
+        progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progress.setIndeterminate(true);
+        setupRecyclerView((RecyclerView) recyclerView,data  );
+        progress.dismiss();
+
     }
 
     @Override
@@ -111,10 +129,12 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<DummyContent.DummyItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
-            mValues = items;
+        private final List<Earthquake> mValues;
+
+        public SimpleItemRecyclerViewAdapter(List<Earthquake> data) {
+            mValues = data;
+
         }
 
         @Override
@@ -127,15 +147,36 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).website_name);
+            holder.mMagnitude.setText(getFormattedMagnitude(mValues.get(position).getMagnitude()));
+            String original = mValues.get(position).getLocation();
+            GradientDrawable magnitudeCircle = (GradientDrawable) holder.mMagnitude.getBackground();
+            // Get the appropriate background color based on the current earthquake magnitude
+            int magnitudeColor = getMagnitudeColor(getFormattedMagnitude(mValues.get(position).getMagnitude()));
+            // Set the color on the magnitude circle
+            magnitudeCircle.setColor(magnitudeColor);
+            if (original.contains(LOCATION_SEPARATOR))
+            { String[] parts = original.split(LOCATION_SEPARATOR);
+                // Location offset should be "5km N " + " of " --> "5km N of"
+                offsetloc = parts[0] + LOCATION_SEPARATOR;
+                primaryloc = parts[1];
+            }
+            else
+            {    primaryloc = original; offsetloc= "near ";
+            }
+            holder.mPrimary_location.setText(primaryloc);
+            holder.mlocationOffset.setText(offsetloc);
+            // Create a new Date object from the time in milliseconds of the earthquake
+            Date dateObject = new Date(mValues.get(position).getTimeInMilliseconds());
+            holder.mDate.setText(getFormattedDate(dateObject));
+            holder.mTime.setText(getFormattedTime(dateObject));
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(EartthquakeDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        arguments.putString(EartthquakeDetailFragment.ARG_ITEM_TITLE, holder.mItem.getLocation());
+                        arguments.putString(EartthquakeDetailFragment.ARG_ITEM_URL, holder.mItem.getUrl());
                         EartthquakeDetailFragment fragment = new EartthquakeDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -144,12 +185,70 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, EartthquakeDetailActivity.class);
-                        intent.putExtra(EartthquakeDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        intent.putExtra(EartthquakeDetailFragment.ARG_ITEM_TITLE, holder.mItem.getLocation());
+                        intent.putExtra(EartthquakeDetailFragment.ARG_ITEM_URL, holder.mItem.getUrl());
+
 
                         context.startActivity(intent);
                     }
                 }
             });
+        }
+
+        private int getMagnitudeColor(String formattedMagnitude) {
+            int magnitudeColorResourceId;
+            int magnitudeFloor = (int) Math.floor(Double.parseDouble(formattedMagnitude));
+            switch (magnitudeFloor)
+            {
+                case 0:
+                case 1:
+                    magnitudeColorResourceId = R.color.magnitude1;
+                    break;
+                case 2:
+                    magnitudeColorResourceId = R.color.magnitude2;
+                    break;
+                case 3:
+                    magnitudeColorResourceId = R.color.magnitude3;
+                    break;
+                case 4:
+                    magnitudeColorResourceId = R.color.magnitude4;
+                    break;
+                case 5:
+                    magnitudeColorResourceId = R.color.magnitude5;
+                    break;
+                case 6:
+                    magnitudeColorResourceId = R.color.magnitude6;
+                    break;
+                case 7:
+                    magnitudeColorResourceId = R.color.magnitude7;
+                    break;
+                case 8:
+                    magnitudeColorResourceId = R.color.magnitude8;
+                    break;
+                case 9:
+                    magnitudeColorResourceId = R.color.magnitude9;
+                    break;
+                default:
+                    magnitudeColorResourceId = R.color.magnitude10plus;
+                    break;
+
+            }
+            return ContextCompat.getColor(recyclerView.getContext(), magnitudeColorResourceId);
+        }
+
+        private String getFormattedTime(Date dateObject) {
+            SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a");
+            return timeFormat.format(dateObject);
+        }
+
+        private String getFormattedDate(Date dateObject) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("LLL dd, yyyy");
+            return dateFormat.format(dateObject);
+        }
+
+        private String getFormattedMagnitude(double magnitude) {
+            DecimalFormat magnitudeFormat = new DecimalFormat("0.0");
+            return  magnitudeFormat.format(magnitude);
         }
 
         @Override
@@ -159,20 +258,26 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
-            public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
+            public final TextView mMagnitude;
+            public final TextView mPrimary_location;
+            public final TextView mlocationOffset;
+            public final TextView mDate;
+            public final TextView mTime;
+            public Earthquake mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
-                mContentView = (TextView) view.findViewById(R.id.content);
+                mMagnitude = (TextView) view.findViewById(R.id.magnitude);
+                mPrimary_location = (TextView) view.findViewById(R.id.primary_location);
+                mDate = (TextView) view.findViewById(R.id.date);
+                mTime = (TextView) view.findViewById(R.id.timeInMilliseconds);
+                mlocationOffset = (TextView) view.findViewById(R.id.secondary_location);
             }
 
             @Override
             public String toString() {
-                return super.toString() + " '" + mContentView.getText() + "'";
+                return super.toString() + " '" + mPrimary_location.getText() + "'";
             }
         }
     }

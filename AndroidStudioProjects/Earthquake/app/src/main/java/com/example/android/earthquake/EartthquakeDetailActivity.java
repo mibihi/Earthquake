@@ -56,8 +56,10 @@ public class EartthquakeDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(EartthquakeDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(EartthquakeDetailFragment.ARG_ITEM_ID));
+            arguments.putString(EartthquakeDetailFragment.ARG_ITEM_TITLE,
+                    getIntent().getStringExtra(EartthquakeDetailFragment.ARG_ITEM_TITLE));
+            arguments.putString(EartthquakeDetailFragment.ARG_ITEM_URL,
+                    getIntent().getStringExtra(EartthquakeDetailFragment.ARG_ITEM_URL));
             EartthquakeDetailFragment fragment = new EartthquakeDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

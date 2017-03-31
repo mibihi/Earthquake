@@ -7,16 +7,16 @@ package com.example.android.earthquake.dummy;
 public class Earthquake {
     double magnitude;
     String location ;
-    long time;
+    long TimeInMilliseconds;
 
     public double getMagnitude() {
         return magnitude;
     }
 
-    public Earthquake(double magnitude, String location, long time, String url) {
+    public Earthquake(double magnitude, String location, long TimeInMilliseconds, String url) {
         this.magnitude = magnitude;
         this.location = location;
-        this.time = time;
+        this.TimeInMilliseconds = TimeInMilliseconds;
         this.url = url;
     }
 
@@ -32,12 +32,12 @@ public class Earthquake {
         this.location = location;
     }
 
-    public long getTime() {
-        return time;
+    public long getTimeInMilliseconds() {
+        return TimeInMilliseconds;
     }
 
-    public void setTime(long time) {
-        this.time = time;
+    public void setTimeInMilliseconds(long timeInMilliseconds) {
+        this.TimeInMilliseconds = timeInMilliseconds;
     }
 
     public String getUrl() {

@@ -109,7 +109,7 @@ public final class QueryUtils {
             if (urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 jsonResponse = readFromStream(inputStream);
-                Log.e(LOG_TAG, "Data received: " + jsonResponse);
+               // Log.e(LOG_TAG, "Data received: " + jsonResponse);
             } else {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }
@@ -189,13 +189,13 @@ public final class QueryUtils {
                 // Extract the value for the key called "place"
                 String location = properties.getString("place");
 
-                // Extract the value for the key called "time"
+                // Extract the value for the key called "TimeInMilliseconds"
                 long time = properties.getLong("time");
 
                 // Extract the value for the key called "url"
                 String url = properties.getString("url");
 
-                // Create a new {@link Earthquake} object with the magnitude, location, time,
+                // Create a new {@link Earthquake} object with the magnitude, location, TimeInMilliseconds,
                 // and url from the JSON response.
                 Earthquake earthquake = new Earthquake(magnitude, location, time, url);
 
