@@ -109,7 +109,7 @@ public final class QueryUtils {
             if (urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 jsonResponse = readFromStream(inputStream);
-               // Log.e(LOG_TAG, "Data received: " + jsonResponse);
+                Log.e(LOG_TAG, "Data received: " + jsonResponse);
             } else {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }

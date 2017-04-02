@@ -5,9 +5,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
@@ -18,6 +21,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -47,8 +52,9 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
     public String LOG_TAG = EartthquakeListActivity.class.getName();
     private static final String LOCATION_SEPARATOR = " of ";
     /** URL for earthquake data from the USGS dataset */
-    private static final String USGS_REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02&limit=15";
+  // private static final String USGS_REQUEST_URL =
+    //       "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02&limit=15";
+    private static final String USGS_REQUEST_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query";
     /**
      * Constant value for the earthquake loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
@@ -67,6 +73,22 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
     private boolean mTwoPane;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if( id == R.id.settings_id){
+        Intent settingsIntent = new Intent(this,SettingsActivity.class);
+            startActivity(settingsIntent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eartthquake_list);
@@ -83,6 +105,7 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
                         .setAction("Action", null).show();
             }
         });
+
         LoaderManager loaderManager = getSupportLoaderManager();
         loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
@@ -106,13 +129,28 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
 
     @Override
     public Loader<List<Earthquake>> onCreateLoader(int id, Bundle args) {
-        return new EarthquakeLoader(this, USGS_REQUEST_URL);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String minMagnitude = sharedPrefs.getString(getString(R.string.settings_min_magnitude_key),getString(R.string.settings_min_magnitude_default));
+        String orderBy = sharedPrefs.getString(getString(R.string.setting_order_by_key),getString(R.string.settings_order_by_default));
+        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+
+        uriBuilder.appendQueryParameter("format", "geojson");
+        uriBuilder.appendQueryParameter("limit", "10");
+        uriBuilder.appendQueryParameter("minmag", minMagnitude);
+        uriBuilder.appendQueryParameter("orderby", orderBy);
+
+
+       Log.e("MinMagnitude =====",minMagnitude);
+        Log.e("ReqUrl  =====",USGS_REQUEST_URL);
+        return new EarthquakeLoader(this, uriBuilder.toString());
+      //  return new EarthquakeLoader(this, USGS_REQUEST_URL);
     }
 
     @Override
     public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> data) {
         ProgressDialog progress = new ProgressDialog(this);
-        progress.setMessage("Downloading Music :) ");
+        progress.setMessage("Downloading Earthquake Data :) ");
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progress.setIndeterminate(true);
         setupRecyclerView((RecyclerView) recyclerView,data  );
