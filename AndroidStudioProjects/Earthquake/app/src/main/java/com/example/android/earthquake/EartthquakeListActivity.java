@@ -1,12 +1,12 @@
 package com.example.android.earthquake;
-
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
 import android.graphics.drawable.GradientDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -26,12 +26,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-
-
 import com.example.android.earthquake.dummy.Earthquake;
 import com.example.android.earthquake.dummy.EarthquakeLoader;
-
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -105,7 +101,10 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
                         .setAction("Action", null).show();
             }
         });
-
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager conmgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = conmgr.getActiveNetworkInfo();
         LoaderManager loaderManager = getSupportLoaderManager();
         loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
@@ -120,6 +119,8 @@ public class EartthquakeListActivity extends AppCompatActivity implements Loader
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+
     }
 
     private void setupRecyclerView( RecyclerView recyclerView, List<Earthquake> eq) {
